@@ -4,7 +4,8 @@ const bodyParser = require('body-parser');
 const path = require('path');
 
 const app = express();
-const GPT_API_URL = 'https://api.openai.com/v1/...'; // Replace with your GPT API URL
+const GPT_API_URL = 'https://api.openai.com/v1/engines/davinci-codex/completions'; // Replace with your GPT API URL
+const OMDB_API_KEY = 'http://www.omdbapi.com/?i=tt3896198&apikey=7f427b92'; // Replace with your actual OMDB API key
 
 // Middleware to parse request body
 app.use(bodyParser.json());
@@ -22,7 +23,7 @@ app.post('/generate-response', async (req, res) => {
         'Content-Type': 'application/json',
         // Add any required headers or authentication tokens for the GPT API
         // Replace 'YOUR_API_KEY' with your actual API key
-        'Authorization': 'Bearer YOUR_API_KEY'
+        'Authorization': 'Bearer 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'
       }
     });
 
@@ -41,15 +42,9 @@ app.post('/retrieve-movies', async (req, res) => {
   try {
     const { query } = req.body; // Assuming query is sent in the request body
 
-    // Send the query to the TMDb API using Axios
-    const response = await axios.get('https://api.themoviedb.org/3/search/movie', {
-      params: {
-        query: query,
-        api_key: 'YOUR_TMDB_API_KEY' // Replace with your actual TMDb API key
-      }
-    });
-
-    const movieData = response.data.results; // Extract the movie data
+    // Send the query to the OMDB API using Axios
+    const response = await axios.get(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(query)}`);
+    const movieData = response.data.Search || []; // Extract the movie data from the 'Search' property
 
     // Send the movie data back to the frontend
     res.json({ movies: movieData });
@@ -72,7 +67,7 @@ app.post('/generate-recommendations', async (req, res) => {
         'Content-Type': 'application/json',
         // Add any required headers or authentication tokens for the GPT API
         // Replace 'YOUR_API_KEY' with your actual API key
-        'Authorization': 'Bearer YOUR_API_KEY'
+        'Authorization': 'api key'
       }
     });
 
@@ -92,7 +87,7 @@ app.use(express.static('public'));
 
 // Handle all other routes and return the index.html file
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Start the server
